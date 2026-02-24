@@ -1,4 +1,3 @@
-# Build stage
 FROM golang:1.25-bookworm AS builder
 
 WORKDIR /app
@@ -9,18 +8,18 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
-# Run stage
 FROM debian:bookworm-slim
 
 WORKDIR /app
 
-# Install runtime dependencies
 RUN apt-get update && apt-get install -y ffmpeg ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user
-RUN useradd -m -u 1000 appuser
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /app/uploads && \
+    chown -R appuser:appuser /app
+
 USER appuser
 
-COPY --from=builder /app/main .
+COPY --from=builder --chown=appuser:appuser /app/main .
 
 CMD ["./main"]
