@@ -30,11 +30,10 @@ services:
     working_dir: /app
 
     volumes:
-      - ./backend:/app
-
       # アップロードされたファイルの保存先
       - ./backend/uploads:/app/uploads
-    command: go run main.go
+
+      - ./.env:/app/.env
 
     # DB接続情報
     environment:
@@ -43,6 +42,13 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - TZ=Asia/Tokyo
+
+      - DISCORD_CLIENT_ID=REMOVED
+      - DISCORD_CLIENT_SECRET=REMOVED
+      - JWT_SECRET=REMOVED
+      - DISCORD_REDIRECT_URL=https://kura.akkie.me/api/auth/callback
+      - FRONTEND_URL=https://kura.akkie.me/upload/
+
 
     networks:
       - kura_net
