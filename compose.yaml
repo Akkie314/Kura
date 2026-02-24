@@ -1,0 +1,95 @@
+services:
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: kura_tunnel
+    restart: always
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - kura_net
+  
+  nginx:
+    image: nginx:alpine
+    container_name: kura_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - kura_net
+
+  backend:
+    build: ./backend
+    container_name: kura_backend
+    restart: always
+    working_dir: /app
+
+    volumes:
+      - ./backend:/app
+
+      # アップロードされたファイルの保存先
+      - ./backend/uploads:/app/uploads
+    command: go run main.go
+
+    # DB接続情報
+    environment:
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - TZ=Asia/Tokyo
+
+    networks:
+      - kura_net
+
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend/kura
+      dockerfile: Dockerfile
+    container_name: kura_frontend
+    restart: always
+    environment:
+      - API_BASE_URL=http://nginx:80/api
+      - TZ=Asia/Tokyo
+
+      - HOST=0.0.0.0
+      - PORT=3000
+
+    networks:
+      - kura_net
+
+  db:
+    image: postgres:15-alpine
+    container_name: kura_db
+    restart: always
+
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - TZ=Asia/Tokyo
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init/:/docker-entrypoint-initdb.d/
+
+    ports:
+      - "5432:5432"
+
+    networks:
+      - kura_net
+
+volumes:
+  postgres_data:
+
+networks:
+  kura_net:
+    driver: bridge

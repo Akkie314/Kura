@@ -1,0 +1,40 @@
+:root {
+    --color-border-black: #1A1A1E;
+
+    --color-bg-black: #2C2D31;
+    --color-bg-gray: #323338;
+    --color-bg-dark-blue: linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.25) 100%), #5765F2;
+    --color-bg-blue: #5765F2;
+
+    --color-text-white: #f5f5f5;
+    --color-text-light-gray: #ccc;
+
+    --box-shadow-value: 0 0 4px rgb(0 0 0 / 0.25)
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    color: var(--color-text-white);
+    font-family: 'Noto Sans JP', sans-serif;
+    background-color: var(--color-bg-gray);
+
+    color: var(--color-text-white);
+}
+
+/* display:noneを指定するとTabでボタンが指定できなくなる 
+ * なので実質見えないようにする
+ */
+input[type="file"] {
+    position: absolute;
+    top: -1000000px;
+    left: -1000000px;
+    opacity: 0;
+    z-index: -1;
+    width: 1px;
+    height: 1px;
+}

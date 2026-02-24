@@ -1,0 +1,35 @@
+.DS_Store
+.vscode/
+
+.env
+.env.*
+!.env.example
+
+# =========================
+# Backend (Go)
+# =========================
+/backend/uploads/*
+!/backend/uploads/.gitkeep
+# Go binaries
+/backend/kura
+/backend/*.exe
+/backend/*.exe~
+/backend/*.dll
+/backend/*.so
+/backend/*.dylib
+# Test binary
+/backend/*.test
+# Output of the go coverage tool
+/backend/*.out
+
+# =========================
+# Frontend (Nuxt.js / Node.js)
+# =========================
+/frontend/kura/node_modules/
+/frontend/kura/.nuxt/
+/frontend/kura/.output/
+/frontend/kura/dist/
+/frontend/kura/npm-debug.log*
+/frontend/kura/yarn-debug.log*
+/frontend/kura/yarn-error.log*
+/frontend/kura/.pnpm-debug.log*
