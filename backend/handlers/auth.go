@@ -101,6 +101,13 @@ func DiscordCallback(c *gin.Context) {
 		return
 	}
 
+	// 許可されたユーザかどうか
+	result := map[string]interface{}{}
+	if err := db.Conn.Table("allow_users").Where("discord_id = ?", discordUser.ID).Take(&result).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "このユーザーは許可されていません"})
+		return
+	}
+
 	// DB処理
 	var user models.User
 	if err := db.Conn.First(&user, "discord_id = ?", discordUser.ID).Error; err != nil {
