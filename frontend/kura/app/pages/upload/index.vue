@@ -14,8 +14,21 @@ function onChange(file: File) {
 <!--------------------->
 
 <template>
+    <!-- エラー処理 -->
+    <template v-if="state.status === 'error'">
+        <div class="status-box error">
+            <p class="error-title">⚠️ アップロードに失敗しました</p>
+            <p class="error-message">{{ state.message }}</p>
+
+            <div class="action-buttons">
+                <AppButton @click="reset">最初からやり直す</AppButton>
+            </div>
+        </div>
+    </template>
+
+
     <!-- トークンがある人 -->
-    <template v-if="token != null">
+    <template v-else-if="token != null">
         <template v-if="state.status === 'idle'">
             <UploadBox @change="onChange"></UploadBox>
         </template>
@@ -29,17 +42,6 @@ function onChange(file: File) {
             <p>{{ state.message }}</p>
             <AppButton :href="`${config.public.baseUrl}/file/${state.fileId}/`">アップロードしたファイルのページへ移動</AppButton>
         </template>
-    </template>
-
-    <template v-else-if="state.status === 'error'">
-        <div class="status-box error">
-            <p class="error-title">⚠️ アップロードに失敗しました</p>
-            <p class="error-message">{{ state.message }}</p>
-
-            <div class="action-buttons">
-                <AppButton @click="reset">最初からやり直す</AppButton>
-            </div>
-        </div>
     </template>
 
     <!-- トークンがない人 -->
