@@ -27,12 +27,14 @@ const mime = meta.value.mime_type || 'application/octet-stream'
 const rawURL = `${SITE_URL}/api/files/${fileID}`
 const filename = meta.value.original_name || "無名のファイル"
 
-console.log(mime)
+const width = meta.value.width || -1
+const height = meta.value.height || -1
+
 
 // ▼▼▼ OGPの設定出し分け ▼▼▼
 if (mime.startsWith('image/')) {
     // 【画像の場合】
-    useImageSeoMeta(filename, rawURL, mime)
+    useImageSeoMeta(filename, rawURL, mime, width, height)
 
 } else if (mime.startsWith('video/')) {
     // 【動画の場合】
@@ -43,7 +45,7 @@ if (mime.startsWith('image/')) {
         thumbnail_url = `${SITE_URL}/api/files/${fileID}/thumb`
     }
 
-    useVideoSeoMeta(filename, thumbnail_url, rawURL, mime)
+    useVideoSeoMeta(filename, thumbnail_url, rawURL, mime, width, height)
 
 } else {
     // 【その他のファイル（zipなど）】
@@ -64,6 +66,8 @@ function useImageSeoMeta(
     title: string,
     image_url: string,
     mime_type: string,
+    width: number,
+    height: number,
 ) {
     useSeoMeta({
         ogTitle: title,
@@ -73,6 +77,10 @@ function useImageSeoMeta(
         ogImageSecureUrl: image_url,
         ogImageType: mime_type,
         ogImageAlt: title,
+        ogImageWidth: width > 0 ? width : undefined,
+        ogImageHeight: height > 0 ? height : undefined,
+
+
 
         ogType: "website",
 
@@ -87,6 +95,8 @@ function useVideoSeoMeta(
     thumbnail_url: string,
     video_url: string,
     mime_type: string,
+    width: number,
+    height: number,
 ) {
     const desc = "Kura Uploaderで共有された動画ファイルです。";
 
@@ -101,6 +111,11 @@ function useVideoSeoMeta(
         ogVideo: video_url,
         ogVideoSecureUrl: video_url,
         ogVideoType: mime_type,
+
+        ogVideoWidth: width > 0 ? width : undefined,
+        ogVideoHeight: height > 0 ? height : undefined,
+
+
 
         // ▼▼▼ ここを変更 ▼▼▼
         twitterCard: "summary_large_image", // "player" から変更

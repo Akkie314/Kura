@@ -161,6 +161,8 @@ func GetMeta(c *gin.Context) {
 		OriginalName: file.OriginalName,
 		MimeType:     file.MimeType,
 		HasThumbnail: file.HasThumbnail,
+		Width:        file.Width,
+		Height:       file.Height,
 	}
 
 	c.JSON(http.StatusOK, res)
