@@ -63,6 +63,8 @@ func main() {
 	// 認証が不要
 	public := r.Group("/")
 	{
+		public.GET("/files/:id", handlers.DownloadFile)
+		public.HEAD("/files/:id", handlers.DownloadFile)
 		public.GET("/files/:id/meta", handlers.GetMeta)
 		public.GET("/files/:id/thumb", handlers.DownloadThumbnail)
 	}
@@ -76,7 +78,6 @@ func main() {
 		api.PATCH("/upload/:upload_id", handlers.AppendChunk)
 		api.POST("/upload/:upload_id/complete", handlers.CompleteUpload)
 	}
-	r.GET("/files/:id", handlers.DownloadFile)
 
 	r.Run()
 }

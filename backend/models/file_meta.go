@@ -5,4 +5,6 @@ type FileMeta struct {
 	OriginalName string `json:"original_name"`
 	MimeType     string `json:"mime_type"`
 	HasThumbnail bool   `json:"has_thumbnail"`
+	Width        int    `json:"width"`
+	Height       int    `json:"height"`
 }

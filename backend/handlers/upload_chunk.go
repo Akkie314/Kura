@@ -203,6 +203,32 @@ func CompleteUpload(c *gin.Context) {
 		} else {
 			hasThumbnail = true
 		}
+
+		// FastStart
+		// 修正版：エラー詳細を取得する
+		fastStartCmd := exec.Command("ffmpeg", "-y", "-i", session.TempFilePath, "-c", "copy", "-movflags", "+faststart", "-f", "mp4", filePath)
+
+		// CombinedOutput は標準出力と標準エラーの両方をキャプチャします
+		output, err := fastStartCmd.CombinedOutput()
+
+		if err != nil {
+			// ここで output を出力すると、ffmpeg が怒っている理由がログに出ます！
+			fmt.Printf("FastStart最適化に失敗: %v, 詳細: %s\n", err, string(output))
+
+			// フォールバック
+			if err := os.Rename(session.TempFilePath, filePath); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "ファイルの移動に失敗しました"})
+				return
+			}
+		} else {
+			os.Remove(session.TempFilePath)
+		}
+	} else {
+		// リネーム
+		if err := os.Rename(session.TempFilePath, filePath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "完了処理に失敗しました"})
+			return
+		}
 	}
 
 	// application/octet-streamならユーザの宣言を信じる
@@ -211,16 +237,17 @@ func CompleteUpload(c *gin.Context) {
 	}
 
 	// ハッシュ計算
-	hash, err := calcHash(session.TempFilePath)
+	hash, err := calcHash(filePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "ファイルの保存中にエラーが発生しました"})
 		return
 	}
 
-	// リネーム
-	if err := os.Rename(session.TempFilePath, filePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "完了処理に失敗しました"})
-		return
+	// 解像度の取得
+	width := -1
+	height := -1
+	if strings.HasPrefix(mimeType, "video/") || strings.HasPrefix(mimeType, "image/") {
+		width, height = getResolution(filePath)
 	}
 
 	// DBに登録
@@ -233,6 +260,8 @@ func CompleteUpload(c *gin.Context) {
 		Size:         session.TotalSize,
 		FilePath:     filePath,
 		HashSha256:   hash,
+		Width:        width,
+		Height:       height,
 		DeleteAt:     time.Now().Add(30 * 24 * time.Hour),
 	}
 
@@ -250,4 +279,24 @@ func CompleteUpload(c *gin.Context) {
 		"message": "正常にアップロード完了しました",
 		"file_id": fileID,
 	})
+}
+
+// 解像度を取得
+func getResolution(path string) (int, int) {
+	cmd := exec.Command("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=s=x:p=0", path)
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Println("ffprobe実行エラー:", err)
+		return -1, -1
+	}
+
+	var w, h int
+	// 出力（例: "1920x1080\n"）をパース
+	_, err = fmt.Sscanf(strings.TrimSpace(string(out)), "%dx%d", &w, &h)
+	if err != nil {
+		fmt.Println("解像度パースエラー:", err)
+		return -1, -1
+	}
+
+	return w, h
 }

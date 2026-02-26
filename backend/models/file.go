@@ -11,6 +11,8 @@ type File struct {
 	Size         int64     `gorm:"not null" json:"size"`
 	FilePath     string    `gorm:"type:text;not null" json:"file_path"`
 	HashSha256   string    `gorm:"type:char(64);not null" json:"hash_sha256"`
+	Width        int       `gorm:"default:-1" json:"width"`
+	Height       int       `gorm:"default:-1" json:"height"`
 	DeleteAt     time.Time `gorm:"not null" json:"delete_at"`
 	CreatedAt    time.Time `gorm:"autoCreateTime" json:"created_at"`
 }
